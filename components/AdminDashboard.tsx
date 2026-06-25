@@ -204,10 +204,10 @@ const AdminDashboard = forwardRef<AdminDashboardHandle, Props>(({ onSelectPartne
     const loadSampleData = () => {
         if (dataMode === 'live') {
             setImportText(CSV_DATA_LIVE);
-            showToast("Loaded Real (PII) Sample Data", "info");
+            showToast("Loaded sample lead data", "info");
         } else {
             setImportText(CSV_DATA_DEMO);
-            showToast("Loaded Demo Sample Data", "success");
+            showToast("Loaded sample lead data", "success");
         }
     };
 

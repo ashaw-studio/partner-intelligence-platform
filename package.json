@@ -1,8 +1,12 @@
 {
   "name": "partner-intelligence-platform",
+  "version": "1.0.0",
+  "description": "AI-powered cloud partner intelligence platform — partner scorecards, funding optimization, and AI lead matching. Portfolio demo (fictional data).",
   "private": true,
-  "version": "0.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "dev": "tsx server.ts",
     "start": "node server.ts",

@@ -101,6 +101,6 @@ Returns top 3 matches with confidence scores and plain-English reasoning.
 
 ## 7. Security Notes
 
-- **API Keys:** Loaded via environment variables, never hardcoded. In production, AI calls move server-side.
-- **Data Isolation:** Multi-tenant isolation simulated in MVP. Production uses database-level row security.
-- **PII Handling:** Demo data is anonymized. Live data import uses the file upload feature (not stored in code).
+- **API Keys:** Loaded via environment variables, never hardcoded. In production, AI calls move to a server-side proxy so the key is never exposed to the browser.
+- **Data Isolation:** Multi-tenant isolation is simulated in this demo. Production would enforce database-level row security.
+- **Data:** All seed and lead data in this repository is entirely fictional (reserved `.example.com` domains and `555` phone numbers). Real data would be ingested at runtime via the CSV upload feature, never committed to source.

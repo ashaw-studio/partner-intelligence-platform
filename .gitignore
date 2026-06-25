@@ -17,7 +17,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
 
 # Editor directories and files
 .vscode/*
@@ -25,20 +24,10 @@ lerna-debug.log*
 .idea
 .DS_Store
 *.suo
-*.ntvs*
-*.njsproj
-*.sln
 *.sw?
 
-# Google AI Studio artifacts
-migrated_prompt_history/
-metadata.json
-generate_arch_image.ts
-generate_images.ts
-
-# Package manager locks (use npm install to regenerate)
+# Package manager locks
 bun.lock
 
 # Vercel
-.vercel
 .vercel

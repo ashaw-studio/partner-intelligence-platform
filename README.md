@@ -145,14 +145,41 @@ For each unassigned lead the matcher weighs capability alignment, track maturity
 
 ---
 
-## Notes for Reviewers
+## Demo Personas
 
-- **Auth is simulated.** The login flow is a demo persona switcher — there is no real authentication, and it is not intended for production use as-is.
-- **Data is client-side.** LocalStorage stands in for a database to keep the demo zero-setup. The `dbService` interface is deliberately DB-shaped so it could be swapped for a real backend.
-- **AI is optional.** All AI calls degrade gracefully so the app is fully demoable offline.
+Use the **"Show Demo Users"** dropdown on the Partner Portal login to sign in as any seeded partner. They span the full maturity range so you can see how scoring and recommendations adapt:
+
+| Company (fictional) | Track | Profile |
+|---|---|---|
+| **Apex Data Corporation** | C — Strategic | Tier-1 Data & AI partner, large team, high readiness |
+| **DataForge Solutions Ltd.** | C — Strategic | Strong data/analytics, scaling AI |
+| **Northwind Innovations** | C — Strategic | Migration-focused, public sector |
+| **Skyline Systems Inc.** | B — Growth | High-growth consultancy, early AI |
+| **Summit Software Inc.** | B — Growth | ISV/SI with production AI workloads |
+| **Meridian Consulting** | B — Growth | Mid-market MSP, building practice |
+| **Beacon IT Group** | A — Foundational | New entrant, needs enablement |
+
+For the admin view, log out and choose **"Nimbus Cloud Admin"**.
+
+---
+
+## Engineering Notes, Trade-offs & Roadmap
+
+This is a focused demo, and a few decisions were made deliberately to keep it zero-setup and fully runnable offline. Each has a clear production path:
+
+| Area | Demo Implementation | Why | Production Path |
+|---|---|---|---|
+| **Persistence** | Browser LocalStorage | No backend needed to demo end-to-end flows | `dbService` is intentionally DB-shaped — swap for PostgreSQL/DynamoDB behind the same interface |
+| **AI key** | Gemini key read client-side at build | Keeps the demo self-contained | Move AI calls behind a serverless proxy so the key never reaches the browser |
+| **Auth** | Simulated persona switcher | Lets reviewers explore both roles instantly | Real SSO / OAuth (e.g., Cognito) with RBAC |
+| **Styling** | Tailwind via CDN | Fast iteration, no build step for styles | Compile Tailwind through PostCSS for tree-shaking and CSP compliance |
+| **Bundle** | Single chunk (~250 KB gzip) | Acceptable for a demo SPA | Route-level code-splitting via dynamic `import()` |
+| **AI resilience** | Deterministic fallbacks when no key/timeout | App stays fully demoable offline | Same pattern + retries/observability in production |
+
+> The point of these notes is to show the reasoning, not to hide the gaps — the architecture was built so each demo shortcut has a one-step swap to a production-grade component.
 
 ---
 
 ## License
 
-MIT — see notes above. Built as a personal portfolio project; all data is fictional.
+MIT — see [LICENSE](./LICENSE). Built as a personal portfolio project; all data is fictional.
