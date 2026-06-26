@@ -17,13 +17,40 @@ interface Props {
 
 // --- SCORE CALCULATION LOGIC ---
 
+// Derives a representative AWS technical headcount. Uses the explicit
+// awsTeamSize when present, otherwise estimates from the team-size band so the
+// dashboard never shows a blank figure for seeded/intake partners.
+const getAwsHeadcount = (p: PartnerData): number => {
+    if (typeof p.awsTeamSize === 'number' && p.awsTeamSize > 0) return p.awsTeamSize;
+    const band = (p.teamSizeTech || '0').trim();
+    const map: Record<string, number> = { '0': 0, '1': 1, '2-3': 3, '4-6': 5, '7-10': 8, '11+': 12 };
+    if (map[band] !== undefined) return map[band];
+    const n = parseInt(band, 10);
+    return isNaN(n) ? 0 : n;
+};
+
+// Revenue band -> score (robust to en-dash ranges and substring overlaps).
+const revenueScore = (mr: string): number => {
+    if (/>\s*\$?200k/i.test(mr)) return 30;   // ">$200k"
+    if (/200k/i.test(mr)) return 20;          // "$50k–$200k"
+    if (/50k/i.test(mr)) return 10;           // "$10k–$50k"
+    return 0;                                  // "<$10k" / unset
+};
+
+// Growth ambition band -> score.
+const growthScore = (agt: string): number => {
+    if (/50%\s*\+/.test(agt)) return 25;      // "50%+"
+    if (/25.*50/.test(agt)) return 15;        // "25–50%"
+    return 0;                                  // "10–25%" / "<10%" / "Not set"
+};
+
+// Tolerant check for in-house assessment delivery (handles ASCII/Unicode hyphens).
+const isInHouse = (s: string): boolean => /in.?house/i.test(s || '');
+
 const calculatePropensity = (p: PartnerData): number => {
     let score = 0;
-    if (p.monthlyResale.includes('>$200k')) score += 30;
-    else if (p.monthlyResale.includes('$50k')) score += 20;
-    else if (p.monthlyResale.includes('$10k')) score += 10;
-    if (p.arrGrowthTarget.includes('50%')) score += 25;
-    else if (p.arrGrowthTarget.includes('25%')) score += 15;
+    score += revenueScore(p.monthlyResale);
+    score += growthScore(p.arrGrowthTarget);
     const teamSize = parseInt(p.teamSizeTech.split('-')[0]) || 0;
     if (p.teamSizeTech.includes('11+')) score += 25;
     else if (teamSize >= 5) score += 15;
@@ -44,7 +71,7 @@ const calculateServicePropensity = (p: PartnerData): number => {
     else if (p.mapPhasesDelivered.length === 1) score += 15;
 
     // Assessment Cap
-    if (p.deliversAssessments.includes('in-house')) score += 20;
+    if (isInHouse(p.deliversAssessments)) score += 20;
 
     // Advanced Certs
     const pro = (parseInt(p.certCount.pro_sa) || 0) + (parseInt(p.certCount.pro_devops) || 0);
@@ -60,16 +87,12 @@ const getResellPropensityBreakdown = (p: PartnerData) => {
     const breakdown = [
         { label: 'Revenue Baseline', score: 0, max: 30, note: p.monthlyResale, advice: "Increase monthly recurring resale revenue to >$50k." },
         { label: 'Growth Ambition', score: 0, max: 25, note: p.arrGrowthTarget, advice: "Commit to >25% YoY growth target." },
-        { label: 'Technical Capacity', score: 0, max: 25, note: `${p.awsTeamSize || 0} Engineers`, advice: "Grow certified technical team to 5+." },
+        { label: 'Technical Capacity', score: 0, max: 25, note: `${getAwsHeadcount(p)} Engineers`, advice: "Grow certified technical team to 5+." },
         { label: 'Strategic Alignment', score: 0, max: 20, note: `${p.competencies.length} Competencies`, advice: "Achieve 2+ AWS Competencies." }
     ];
 
-    if (p.monthlyResale.includes('>$200k')) breakdown[0].score = 30;
-    else if (p.monthlyResale.includes('$50k')) breakdown[0].score = 20;
-    else if (p.monthlyResale.includes('$10k')) breakdown[0].score = 10;
-
-    if (p.arrGrowthTarget.includes('50%')) breakdown[1].score = 25;
-    else if (p.arrGrowthTarget.includes('25%')) breakdown[1].score = 15;
+    breakdown[0].score = revenueScore(p.monthlyResale);
+    breakdown[1].score = growthScore(p.arrGrowthTarget);
 
     const teamSize = parseInt(p.teamSizeTech.split('-')[0]) || 0;
     if (p.teamSizeTech.includes('11+')) breakdown[2].score = 25;
@@ -84,7 +107,7 @@ const getServicePropensityBreakdown = (p: PartnerData) => {
     const breakdown = [
         { label: 'Delivery Capacity', score: 0, max: 30, note: p.teamSizeTech, advice: "Expand technical bench to 11+ engineers." },
         { label: 'MAP Experience', score: 0, max: 25, note: `${p.mapPhasesDelivered.length} Phases`, advice: "Deliver Assess & Mobilize phases in-house." },
-        { label: 'Assessment Capability', score: 0, max: 20, note: p.deliversAssessments.includes('in-house') ? 'In-House' : 'Outsourced', advice: "Develop in-house OLA/CVA capability." },
+        { label: 'Assessment Capability', score: 0, max: 20, note: isInHouse(p.deliversAssessments) ? 'In-House' : 'Outsourced', advice: "Develop in-house OLA/CVA capability." },
         { label: 'Advanced Certifications', score: 0, max: 25, note: 'Pro Certs', advice: "Obtain 2+ Professional or Specialty certifications." }
     ];
 
@@ -96,7 +119,7 @@ const getServicePropensityBreakdown = (p: PartnerData) => {
     if (p.mapPhasesDelivered.length >= 2) breakdown[1].score = 25;
     else if (p.mapPhasesDelivered.length === 1) breakdown[1].score = 15;
 
-    if (p.deliversAssessments.includes('in-house')) breakdown[2].score = 20;
+    if (isInHouse(p.deliversAssessments)) breakdown[2].score = 20;
 
     const pro = (parseInt(p.certCount.pro_sa) || 0) + (parseInt(p.certCount.pro_devops) || 0);
     breakdown[3].note = `${pro} Pro Certs`;
@@ -149,7 +172,7 @@ const getTechFocus = (p: PartnerData) => {
 const getPriorityActions = (p: PartnerData) => {
     const actions = [];
     
-    if (p.awsTeamSize && p.awsTeamSize < 5) {
+    if (getAwsHeadcount(p) < 5) {
         actions.push({ type: 'Capacity', title: 'Capacity Optimization', desc: 'Utilize IMS Bench to scale your delivery.' });
     } else {
         actions.push({ type: 'Capacity', title: 'Team Expansion', desc: 'Sponsor 2 Associates for Pro Certification.' });
@@ -588,7 +611,7 @@ const Dashboard = React.forwardRef<DashboardHandle, Props>(({ data, onReset, onE
                             <div id="technical-dna" className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm">
                                 <div className="flex justify-between items-center mb-6"><h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2"><Database size={14} /> Technical DNA</h4><EditTrigger step={4} /></div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                    <div><div className="flex items-end gap-2 mb-1"><span className="text-4xl font-black text-slate-900">{data.awsTeamSize}</span><span className="text-sm font-bold text-slate-500 mb-1.5">Engineers</span></div><p className="text-xs text-slate-400">Total AWS Technical Headcount</p><div className="mt-6 space-y-3"><div className="flex justify-between text-xs"><span className="text-slate-600">Sales vs Tech Ratio</span><span className="font-bold text-slate-900">{parseInt(data.teamSizeSales) > 0 ? `1 : ${Math.round((parseInt(data.teamSizeTech) || 1) / (parseInt(data.teamSizeSales) || 1))}` : 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-slate-600">Pro Cert Density</span><span className="font-bold text-slate-900">{((parseInt(data.certCount.pro_sa) + parseInt(data.certCount.pro_devops)) / (parseInt(data.teamSizeTech) || 1) * 100).toFixed(0)}%</span></div></div></div>
+                                    <div><div className="flex items-end gap-2 mb-1"><span className="text-4xl font-black text-slate-900">{getAwsHeadcount(data)}</span><span className="text-sm font-bold text-slate-500 mb-1.5">Engineers</span></div><p className="text-xs text-slate-400">Total AWS Technical Headcount</p><div className="mt-6 space-y-3"><div className="flex justify-between text-xs"><span className="text-slate-600">Sales vs Tech Ratio</span><span className="font-bold text-slate-900">{parseInt(data.teamSizeSales) > 0 ? `1 : ${Math.round((parseInt(data.teamSizeTech) || 1) / (parseInt(data.teamSizeSales) || 1))}` : 'N/A'}</span></div><div className="flex justify-between text-xs"><span className="text-slate-600">Pro Cert Density</span><span className="font-bold text-slate-900">{((parseInt(data.certCount.pro_sa) + parseInt(data.certCount.pro_devops)) / (parseInt(data.teamSizeTech) || 1) * 100).toFixed(0)}%</span></div></div></div>
                                     <div className="h-[180px]"><ResponsiveContainer width="100%" height="100%"><BarChart data={certData} layout="vertical" barSize={12}><XAxis type="number" hide /><YAxis dataKey="name" type="category" width={80} tick={{fontSize: 10, fill: '#64748b', fontWeight: 600}} axisLine={false} tickLine={false} /><Tooltip cursor={{fill: 'transparent'}} contentStyle={{borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} /><Bar dataKey="count" radius={[0, 4, 4, 0]}>{certData.map((entry, index) => (<Cell key={`cell-${index}`} fill={entry.color} />))}</Bar></BarChart></ResponsiveContainer></div>
                                 </div>
                             </div>

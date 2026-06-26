@@ -122,7 +122,13 @@ export const dbService = {
     
     getUnassignedLeads: (): Opportunity[] => {
         const raw = localStorage.getItem(UNASSIGNED_KEY);
-        return raw ? JSON.parse(raw) : [];
+        if (!raw) return [];
+        try {
+            const data = JSON.parse(raw);
+            return Array.isArray(data) ? data : [];
+        } catch (e) {
+            return [];
+        }
     },
 
     addUnassignedLead: (lead: Opportunity) => {

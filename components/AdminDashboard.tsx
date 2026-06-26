@@ -39,11 +39,11 @@ const PARTNER_MAPPING: Record<string, string> = {
 
 const calculatePropensity = (p: PartnerData): number => {
     let score = 0;
-    if (p.monthlyResale.includes('>$200k')) score += 30;
-    else if (p.monthlyResale.includes('$50k')) score += 20;
-    else if (p.monthlyResale.includes('$10k')) score += 10;
-    if (p.arrGrowthTarget.includes('50%')) score += 25;
-    else if (p.arrGrowthTarget.includes('25%')) score += 15;
+    if (/>\s*\$?200k/i.test(p.monthlyResale)) score += 30;
+    else if (/200k/i.test(p.monthlyResale)) score += 20;
+    else if (/50k/i.test(p.monthlyResale)) score += 10;
+    if (/50%\s*\+/.test(p.arrGrowthTarget)) score += 25;
+    else if (/25.*50/.test(p.arrGrowthTarget)) score += 15;
     const teamSize = parseInt(p.teamSizeTech.split('-')[0]) || 0;
     if (p.teamSizeTech.includes('11+')) score += 25;
     else if (teamSize >= 5) score += 15;

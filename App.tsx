@@ -85,7 +85,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-slate-50 text-slate-900 selection:bg-blue-100 selection:text-[#004481]">
-      
+
+      {/* ---------------- DEMO BANNER ---------------- */}
+      <div className="bg-amber-50 border-b border-amber-200 text-amber-900 text-xs sm:text-sm text-center py-2 px-4 font-medium">
+        🧪 <span className="font-bold">Portfolio demo</span> — every company, person, and lead shown is fictional. No real, proprietary, or sensitive data is used.
+      </div>
+
       {/* ---------------- NAVIGATION ---------------- */}
       {view !== 'login' && (
           <nav className="bg-white/80 border-b border-slate-200 sticky top-0 z-50 backdrop-blur-xl shadow-sm">
@@ -198,23 +203,12 @@ export default function App() {
                             <p className="text-slate-500 text-lg font-medium">Select your gateway to continue to the AWS Partner Scorecard platform.</p>
                         </div>
 
-                        {/* Data Toggle */}
+                        {/* Demo controls */}
                         <div className="flex flex-col sm:flex-row justify-between items-center mb-8 gap-4">
-                            <div className="bg-white p-1 rounded-lg border border-slate-200 shadow-sm flex">
-                                <button 
-                                    onClick={() => setDataMode('live')}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all ${dataMode === 'live' ? 'bg-red-50 text-red-600 shadow-sm' : 'text-slate-400 hover:bg-slate-50'}`}
-                                >
-                                    <Database size={14} /> Live Data
-                                </button>
-                                <button 
-                                    onClick={() => setDataMode('demo')}
-                                    className={`px-3 py-1.5 rounded-md text-xs font-bold uppercase tracking-wide flex items-center gap-2 transition-all ${dataMode === 'demo' ? 'bg-green-50 text-green-600 shadow-sm' : 'text-slate-400 hover:bg-slate-50'}`}
-                                >
-                                    <Sparkles size={14} /> Demo Data
-                                </button>
+                            <div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-3 py-1.5 rounded-lg text-emerald-700 text-xs font-bold uppercase tracking-wide">
+                                <Sparkles size={14} /> Demo data · fictional
                             </div>
-                            
+
                             <button 
                                 onClick={() => setView('presentation')}
                                 className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-[#004481] transition-colors uppercase tracking-widest bg-slate-50 px-3 py-1.5 rounded-lg border border-transparent hover:border-blue-100 hover:bg-blue-50"
@@ -260,10 +254,10 @@ export default function App() {
                                 <Lock size={12} /> Encrypted Session
                             </div>
                             <div className="flex items-center gap-2">
-                                <span className={`w-2 h-2 rounded-full ${dataMode === 'live' ? 'bg-red-500' : 'bg-green-500'}`}></span>
-                                {dataMode === 'live' ? 'Mode: Live Data' : 'Mode: Demo Data'}
+                                <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                                Demo Mode · Fictional Data
                             </div>
-                            <span>© 2025 Nimbus Cloud</span>
+                            <span>© 2026 Nimbus Cloud (fictional)</span>
                         </div>
                     </div>
                 </div>

@@ -13,7 +13,7 @@ export interface ChatBotHandle {
 
 const ChatBot = React.forwardRef<ChatBotHandle, Props>(({ partnerData }, ref) => {
     const [messages, setMessages] = useState<{ role: 'user' | 'model', text: string }[]>([
-        { role: 'model', text: `Hello ${partnerData.contactName || 'Partner'}! I am your Nimbus Cloud Practice Consultant. based on your scorecard, I see you are in ${partnerData.calculatedTrack}. How can I help you accelerate your AWS practice today?` }
+        { role: 'model', text: `Hello ${partnerData.contactName || 'Partner'}! I am your Nimbus Cloud Practice Consultant. Based on your scorecard, I see you are in ${partnerData.calculatedTrack}. How can I help you accelerate your AWS practice today?` }
     ]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -117,6 +117,7 @@ const ChatBot = React.forwardRef<ChatBotHandle, Props>(({ partnerData }, ref) =>
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                        disabled={loading}
                     />
                     <button 
                         id="chat-send-btn"
