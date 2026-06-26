@@ -2,10 +2,16 @@
 
 > A full-stack portfolio project: an AI-powered ecosystem portal that digitizes cloud-partner assessment, funding optimization, and intelligent lead matching. Built around a fictional cloud distributor, **Nimbus Cloud**, managing its AWS partner network.
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Open-2ea44f?logo=githubpages)](https://ashaw-studio.github.io/partner-intelligence-platform/)
 ![React](https://img.shields.io/badge/React-19-blue?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript)
 ![Vite](https://img.shields.io/badge/Vite-6-purple?logo=vite)
 ![AI](https://img.shields.io/badge/AI-Google%20Gemini-orange?logo=google)
+![License](https://img.shields.io/badge/License-MIT-black)
+
+**▶ Live demo:** https://ashaw-studio.github.io/partner-intelligence-platform/
+
+![Partner Intelligence Platform — login](./docs/screenshots/01-login.png)
 
 ---
 
@@ -81,6 +87,14 @@ Open **http://localhost:3000**.
 
 ---
 
+## Screenshots
+
+| Admin Command Center | Partner Scorecard |
+|---|---|
+| ![Admin portfolio](./docs/screenshots/02-admin-portfolio.png) | ![Partner dashboard](./docs/screenshots/03-partner-dashboard.png) |
+
+---
+
 ## Demo Walkthrough (10 minutes)
 
 The app ships with **7 pre-seeded fictional partners** and sample lead data for a complete end-to-end demo.
@@ -123,6 +137,36 @@ For each unassigned lead the matcher weighs capability alignment, track maturity
 ---
 
 ## Architecture
+
+```mermaid
+flowchart TD
+    subgraph Client["Browser (React 19 SPA)"]
+        Login["Login / Role Switcher"]
+        Partner["Partner Portal<br/>Scorecard · Funding · AI Consultant"]
+        Admin["Admin Command Center<br/>Portfolio · Import · Matcher · Pipeline"]
+    end
+
+    subgraph Services["Service Layer (TypeScript)"]
+        DB["dbService<br/>(persistence interface)"]
+        Gemini["geminiService<br/>(AI + fallbacks)"]
+        Scoring["Scoring Engine<br/>(types.ts)"]
+    end
+
+    Store[("LocalStorage<br/>(swap → PostgreSQL / DynamoDB)")]
+    AI["Google Gemini API"]
+
+    Login --> Partner
+    Login --> Admin
+    Partner --> DB
+    Admin --> DB
+    Partner --> Gemini
+    Admin --> Gemini
+    Partner --> Scoring
+    DB --> Store
+    Gemini -. optional .-> AI
+```
+
+### File Layout
 
 ```
 ├── App.tsx                 # Root SPA — routing & state
